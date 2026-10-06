@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Cadastro de Usuários</title>
+</head>
+
+<body>
+
+    <h1>Cadastro de usuários</h1>
+    <p>Cadastre, consulte e mantenha os dados dos seus usuários</p>
+
+    <div class="msg">
+        <p id="mensagem"></p>
+    </div>
+
+    <div class="conteudo">
+
+        <div class="cadastro">
+
+            <h3>Novo usuário</h3>
+
+            <form id="formCadastro">
+
+                <div>
+                    <label for="nome">Nome</label> <br>
+                    <input type="text" id="nome" name="nome" required>
+                </div>
+
+                <div>
+                    <label for="email">Email</label> <br>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div>
+                    <label for="tel">Telefone</label> <br>
+                    <input type="tel" id="tel" name="tel">
+                </div>
+
+                <div>
+                    <button type="submit" id="salvar">Cadastrar</button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="usuarios">
+
+            <h3>Usuários cadastrados</h3>
+
+            <div class="cabecalho">
+                <span>Nome</span>
+                <span>Email</span>
+                <span>Telefone</span>
+            </div>
+
+            <div id="listaUsuarios"></div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>
+
+<script>
+    const formulario = document.getElementById('formCadastro')
+    const mensagem = document.getElementById('mensagem')
+    const salvar = document.getElementById('salvar')
+
+    async function carregarUsuarios() {
+        const resposta = await fetch('/api/usuarios')
+        const usuarios = await resposta.json()
+
+        const listaUsuarios = document.getElementById('listaUsuarios')
+
+        listaUsuarios.innerHTML = ''
+
+        usuarios.forEach(function(usuario) {
+            const elemento = document.createElement('div')
+
+            elemento.classList.add('usuario')
+
+            elemento.innerHTML = `
+                <span>${usuario.nome}</span>
+                <span>${usuario.email}</span>
+                <span>${usuario.telefone}</span>
+            `
+
+            listaUsuarios.appendChild(elemento)
+        })
+    }
+
+    formulario.addEventListener('submit', async function(event) {
+        event.preventDefault()
+
+        const nome = document.getElementById('nome').value
+        const email = document.getElementById('email').value
+        const telefone = document.getElementById('tel').value
+
+        const resposta = await fetch('/api/usuarios', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nome: nome,
+                email: email,
+                telefone: telefone
+            })
+        })
+
+        if (resposta.ok) {
+
+            mensagem.textContent = 'Usuário cadastrado com sucesso!'
+            mensagem.parentElement.classList.add('mostrar')
+
+            const usuario = document.createElement('div')
+
+            usuario.classList.add('usuario')
+
+            usuario.innerHTML = `
+                <span>${nome}</span>
+                <span>${email}</span>
+                <span>${telefone}</span>
+            `
+
+            document.getElementById('listaUsuarios').appendChild(usuario)
+
+            formulario.reset()
+
+        } else {
+
+            mensagem.textContent = 'Erro ao cadastrar usuário.'
+            mensagem.parentElement.classList.add('mostrar')
+
+        }
+    })
+
+    carregarUsuarios()
+</script>
